@@ -53,3 +53,79 @@ var(t.1000)
 
 plot(ecdf(t.1000))
 curve(pnorm, add=TRUE)
+
+f <- function(lambda, x) {
+  dexp(x, rate = lambda)
+}
+
+L <- function(lambda, x) {
+  prod(f(lambda, x))
+}
+
+
+logL <- function(lambda, x) {
+  sum(log(f(lambda, x)))
+}
+
+n <- 100
+x <- rexp(n, rate = 3)
+logL(3.1, x)
+
+lambdas <- seq(0, 6, 0.01)
+logL.lambdas <- sapply(lambdas, function(lambda) logL(lambda, x))
+plot(lambdas, logL.lambdas, type = "l")
+
+x <- rexp(n, rate = 3)
+opt <- optimize(logL, lower = 0, upper = 6, maximum = TRUE, x = x)
+opt$maximum
+
+sim.EMV <- function() {
+  x <- rexp(n, rate = 3)
+  opt <- optimize(logL, lower = 0, upper = 6, maximum = TRUE, x = x)
+  lambda_real <- opt$maximum
+  return(lambda_real)
+}
+
+
+simu <- replicate(10000, sim.EMV())
+hist(simu)
+
+mean(simu)
+var(simu)
+
+mean(simu) - 3
+
+10000/(9999) *3 - 3
+
+sim.Fisher <- function() {
+  x <- rexp(n, rate = 3)
+  
+  logLx <- function(lambda) logL(lambda, x)
+  # Information de Fisher
+  (grad(logLx, 3))^2
+  
+}
+
+sim.Fisher()
+
+(inf.Fisher <- mean(replicate(10000, sim.Fisher())))
+n/(3^2)
+1/inf.Fisher
+var(simu)
+
+
+n <- 100
+grad2 <- function(f, x) {
+  df <- function(x) {
+    grad(f, x)
+  }
+  grad(df, x)
+}
+sim.Fisher <- function() {
+  x <- rexp(n, 3)
+  # Log-vraisemblance par rapport à x
+  logLx <- function(lambda) logL(lambda, x)
+  # Information de Fisher
+  grad2(logLx, 3)
+}
+(-mean(replicate(1000, sim.Fisher())))
