@@ -57,4 +57,46 @@ Bon_ICs <- function(n, param, alpha) {
 
 n <- 100
 alpha <- 0.05
+Test_ICS <- replicate(10000, Bon_ICs(n, 3, alpha))
+mean(Test_ICS)
 hm <- replicate(100,replicate(10000, Bon_ICs(n, 3, alpha)))
+mean(hm)
+
+
+
+#Lemme Slutsky
+slutsky <- function(p, n, k, alpha) {
+  sim <- function() {
+    x <- rbinom(n, 1, p)
+    phat <- mean(x)
+    IC <- phat + c(-1, 1) * qnorm(1 - alpha/2) * sqrt(phat * (1 - phat)/n)
+    p >= IC[1] & p <= IC[2]
+  }
+  mean(replicate(k, sim()))
+}
+
+Res <- slutsky(0.5, 100, 150,0.05)
+Res
+
+
+p <- 0.02
+k <- 10000
+alpha <- 0.05
+ns <- floor(10^seq(1, 4, length.out = 30)) # 30 points en échelle logarithmique
+slpt <- sapply(ns, function(n) slutsky(p, n, k, alpha))
+plot(log10(ns), slpt, type = "l", col = "red")
+
+
+noslutsky <- function(p, n, k, alpha) {
+  sim <- function() {
+    x <- rbinom(n, 1, p)
+    phat <- mean(x)
+    u <- qnorm(1 - alpha/2)
+    IC <- (2 * n * phat + u^2 + c(-1, 1) * u * sqrt(u^2 + 4 * n * phat * (1 - phat)))/(2 * n + 2* u^2)
+    p >= IC[1] & p <= IC[2]
+  }
+  mean(replicate(k, sim()))
+}
+nslpt <- sapply(ns, function(n) noslutsky(p, n, k, alpha))
+plot(log10(ns), slpt, type = "l", col = "red")
+lines(log10(ns), nslpt, col = "green")
