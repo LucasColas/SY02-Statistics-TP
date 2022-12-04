@@ -72,11 +72,11 @@ hist(rstandard(m4), freq = FALSE)
 plot(x4,rstandard(m4))
 plot(m4$fitted.values, rstandard(m4))
 
-#Prediction
+#---Prediction Température---
 summary(a)
 a
 
-#Modèle
+#Modèle Température 
 model_hooker <- lm(Pression ~ Temp, data = a)
 
 #Vérifications des hypothèses
@@ -85,11 +85,16 @@ abline(model_hooker$coefficients[1], model_hooker$coefficients[2])
 
 
 summary(model_hooker)
+model_hooker$coefficients
 qqnorm(model_hooker$residuals)
 qqline(model_hooker$residuals)
 plot(model_hooker$fitted.values, rstandard(model_hooker))
 ?predict.lm
 ?confint
+#Intervalle de confiance
 confint(model_hooker, level = 0.99)
 data_test <- data.frame(Temp = c(97))
+#intervalle de prédiction
 predict(model_hooker, data_test, level=0.99, interval = 'confidence')
+predict(model_hooker, data_test, interval = 'none')
+model_hooker$coefficients[2]*97 + model_hooker$coefficients[1]
